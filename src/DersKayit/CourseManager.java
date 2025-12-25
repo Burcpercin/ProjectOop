@@ -4,29 +4,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CourseManager {
-    
-    private List<Courses> courseList = new ArrayList<>();
+    private List<Courses> allCourses = new ArrayList<>();
 
-    // Ders ekleme metodu
-    public void addCourse(Courses newCourse) {
-        courseList.add(newCourse);
-        System.out.println("Başarılı: " + newCourse.getCourseName() + " sisteme eklendi.");
+    public void addCourse(Courses c) {
+        allCourses.add(c);
+        // İleride buraya 'courses.csv'ye yazma kodu eklenecek
     }
 
-    // Ders listeleme metodu
     public void listCourses() {
-        if (courseList.isEmpty()) {
-            System.out.println("Sistemde henüz kayıtlı ders yok.");
+        if (allCourses.isEmpty()) {
+            System.out.println("Sistemde açık ders yok.");
         } else {
-            System.out.println("\n--- MEVCUT DERSLER ---");
-            for (Courses c : courseList) {
-                System.out.println(c.toString());
+            System.out.println("\n--- AÇILAN DERSLER ---");
+            for (Courses c : allCourses) {
+                System.out.println(c);
             }
         }
     }
 
-    //Öğrenci işlemleri için gerekecek
-    public List<Courses> getCourseList() {
-        return courseList;
+    public Courses findCourseByCode(String code) {
+        for (Courses c : allCourses) {
+            if (c.getCourseCode().equalsIgnoreCase(code)) {
+                return c;
+            }
+        }
+        return null;
     }
 }
