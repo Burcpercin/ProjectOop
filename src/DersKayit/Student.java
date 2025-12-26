@@ -18,8 +18,19 @@ public class Student implements Registrable {
         this.enrolledCourses = new ArrayList<>();
     }
 
-	@Override
-	public void registerForCourse(Course course) {
-		
-	}
+    public double calculateTuition() {
+        return 5000.0;
+    }
+
+    @Override
+    public void registerForCourse(Course course) {
+
+        if(enrolledCourses.contains(course)) {
+            System.out.println("Zaten kayıtlısınız.");
+            return;
+        }
+        this.enrolledCourses.add(course);
+        System.out.println(course.getCourseCode() + " dersi eklendi.");
+    }
+
 }
