@@ -7,4 +7,9 @@ public class GraduateStudent extends Student {
         super(username, name, gradeLevel);
         this.thesisTopic = thesisTopic;
     }
+
+    @Override
+    public double calculateTuition() {
+        return 8000.0; // Polimorfizm
+    }
 }
