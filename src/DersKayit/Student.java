@@ -24,7 +24,7 @@ public class Student implements Registrable {
 
     @Override
     public void registerForCourse(Course course) {
-
+    // Ders kontrol ve ekleme
         if(enrolledCourses.contains(course)) {
             System.out.println("Zaten kayıtlısınız.");
             return;
@@ -33,4 +33,21 @@ public class Student implements Registrable {
         System.out.println(course.getCourseCode() + " dersi eklendi.");
     }
 
+    // Ders Çıkarma
+    public void dropCourse(Course course) {
+        if (enrolledCourses.contains(course)) {
+            enrolledCourses.remove(course);
+            System.out.println(course.getCourseCode() + " dersi bırakıldı.");
+        } else {
+            System.out.println("Bu dersi zaten almıyorsunuz.");
+        }
+    }
+
+    public List<Course> getEnrolledCourses() {
+        return Collections.unmodifiableList(enrolledCourses);
+    }
+    
+    public String getName() { return name; }
+    public int getGradeLevel() { return gradeLevel; }
+    public String getStudentNumber() { return studentNumber; }
 }
