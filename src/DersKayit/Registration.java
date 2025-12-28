@@ -15,5 +15,16 @@ public class Registration {
 	        this.registrationDate = LocalDateTime.now();
 	        this.status = "Attempting";
 	    }
-	
+	    
+	    public boolean completeRegistration() {
+	        // 1. Sınıf seviyesi kontrolü
+	        if (student.getGradeLevel() < course.getGradeLevel()) {
+	            System.out.println("HATA: Sınıf seviyesi yetersiz.");
+	            this.status = "Failed";
+	            return false;
+	        }
+	        else {
+	        	return true;
+	        }
+	    }
 }
