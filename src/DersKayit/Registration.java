@@ -33,6 +33,13 @@ public class Registration {
             }
         }
         
+        // Zaten ekli mi?
+        if(student.getEnrolledCourses().contains(this.course)) {
+            System.out.println("UYARI: Bu ders zaten listenizde.");
+            this.status = "Failed - Already Enrolled";
+            return false;
+        }
+
         // Eğer kontrollere takılmaadıysa dersi ekle
         student.registerForCourse(course);
         this.status = "Success";
