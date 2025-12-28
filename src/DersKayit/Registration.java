@@ -23,8 +23,8 @@ public class Registration {
 	            this.status = "Failed";
 	            return false;
 	        }
-	        else {
-	        	return true;
-	        }
+	        student.registerForCourse(course);
+	        this.status = "Success";
+	        return true;
 	    }
 }
