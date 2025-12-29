@@ -2,9 +2,9 @@ package DersKayit;
 
 import java.time.LocalTime;
 
-public class Courses {
-    private String courseCode;
-    private String courseName;
+public class Course {
+    private String code;
+    private String name;
     private String instructorName;
     private String day;
     private LocalTime startTime;
@@ -12,10 +12,10 @@ public class Courses {
     private int capacity;
     private int gradeLevel;
 
-    public Courses(String courseCode, String courseName, String instructorName, 
-                   String day, LocalTime startTime, LocalTime endTime, int capacity, int gradeLevel) {
-        this.courseCode = courseCode;
-        this.courseName = courseName;
+    public Course(String code, String name, String instructorName, String day, 
+                  LocalTime startTime, LocalTime endTime, int capacity, int gradeLevel) {
+        this.code = code;
+        this.name = name;
         this.instructorName = instructorName;
         this.day = day;
         this.startTime = startTime;
@@ -23,23 +23,27 @@ public class Courses {
         this.capacity = capacity;
         this.gradeLevel = gradeLevel;
     }
-    // Gün-saat çakışma kontrolü.
-    public boolean hasConflict(Courses otherCourse) {
-        if (!this.day.equalsIgnoreCase(otherCourse.day)) return false;
-        return this.startTime.isBefore(otherCourse.endTime) && 
-               otherCourse.startTime.isBefore(this.endTime);
+
+    // Çakışma Kontrolü
+    public boolean hasConflict(Course other) {
+        if (!this.day.equalsIgnoreCase(other.day)) return false;
+        // Saat aralığı çakışması mantığı:
+        return this.startTime.isBefore(other.endTime) && other.startTime.isBefore(this.endTime);
     }
 
-    public String getCourseCode() { return courseCode; }
-    public String getCourseName() { return courseName; }
-    public int getGradeLevel() { return gradeLevel; }
+    // --- GETTER METOTLARI (CSV Yazma ve Kontroller İçin Tam Liste) ---
+    public String getCode() { return code; }
+    public String getName() { return name; }
+    public String getInstructorName() { return instructorName; }
+    public String getDay() { return day; }
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
+    public int getCapacity() { return capacity; }
+    public int getGradeLevel() { return gradeLevel; }
 
     @Override
     public String toString() {
-        return String.format("[%s] %s (Sınıf: %d) | %s %s-%s | Hoca: %s", 
-                courseCode, courseName, gradeLevel, day, startTime, endTime, instructorName);
+        return String.format("[%s] %s (Min Sınıf: %d) | %s %s-%s | Hoca: %s", 
+                code, name, gradeLevel, day, startTime, endTime, instructorName);
     }
 }
-
