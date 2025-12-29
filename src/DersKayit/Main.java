@@ -36,10 +36,21 @@ public class Main {
                     } else {
                         activeStudent = new Student(user, name, grade);
                     }
-             // eklenecek       showStudentMenu(scanner, courseCatalog, activeStudent);
+                   // eklenecek showStudentMenu(scanner, courseCatalog, activeStudent);
 
+                } else if (role.equals("instructor")) {
+                    String dept = userData[5];
+                    Instructor activeInstructor = new Instructor(name, dept);
+                    
+                    // Hoca girdiği an, katalogdaki dersleri kendine çeker.
+                    activeInstructor.syncCoursesFromCatalog(courseCatalog);
+                    
+                  // eklenecek  showInstructorMenu(scanner, courseCatalog, activeInstructor);
                 }
+            } else {
+                System.out.println("Hatalı kullanıcı adı veya şifre!");
             }
         }
     }
 }
+    
