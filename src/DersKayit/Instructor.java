@@ -14,17 +14,22 @@ public class Instructor {
         this.givenCourses = new ArrayList<>();
     }
 
-    public void addCourseToTeach(Course course) {
-        // Hoca için sadece zaman kontrolü yapılır
-        for (Course c : givenCourses) {
-            if (c.hasConflict(course)) {
-                System.out.println("HATA: Bu tarihte başka dersiniz var!");
-                return;
+    // Hoca giriş yapınca derslerini katalogdan çeker 
+    public void syncCoursesFromCatalog(CourseCatalog catalog) {
+        this.givenCourses.clear();
+        for (Course c : catalog.getAllCourses()) {
+            // İsim eşleşiyorsa bu ders hocanındır
+            if (c.getInstructorName().equalsIgnoreCase(this.name)) {
+                this.givenCourses.add(c);
             }
         }
+    }
+
+    public void addCourseToTeach(Course course) {
+        // Sadece yerel listeye ekler, CSV kaydını Catalog yapar.
         givenCourses.add(course);
-        System.out.println("Ders programınıza eklendi: " + course.getCourseName());
     }
 
     public String getName() { return name; }
+    public List<Course> getGivenCourses() { return givenCourses; }
 }
