@@ -9,6 +9,7 @@ public class Student implements Registrable {
     private String name;
     private int gradeLevel;
     
+    // Encapsulation: Liste private, dışarıdan doğrudan erişilemez.
     private List<Course> enrolledCourses;
 
     public Student(String studentNumber, String name, int gradeLevel) {
@@ -18,31 +19,30 @@ public class Student implements Registrable {
         this.enrolledCourses = new ArrayList<>();
     }
 
+    // Polimorfizm için metot
     public double calculateTuition() {
         return 5000.0;
     }
 
     @Override
     public void registerForCourse(Course course) {
-    // Ders kontrol ve ekleme
-        if(enrolledCourses.contains(course)) {
-            System.out.println("Zaten kayıtlısınız.");
-            return;
+        // Asıl kontroller Registration sınıfında yapılır, burası sadece listeye ekler.
+        if (!enrolledCourses.contains(course)) {
+            enrolledCourses.add(course);
+            System.out.println("Sistem Mesajı: " + course.getCode() + " dersi öğrenci profiline işlendi.");
         }
-        this.enrolledCourses.add(course);
-        System.out.println(course.getCourseCode() + " dersi eklendi.");
     }
 
-    // Ders Çıkarma
     public void dropCourse(Course course) {
         if (enrolledCourses.contains(course)) {
             enrolledCourses.remove(course);
-            System.out.println(course.getCourseCode() + " dersi bırakıldı.");
+            System.out.println("Sistem Mesajı: " + course.getCode() + " dersi bırakıldı.");
         } else {
-            System.out.println("Bu dersi zaten almıyorsunuz.");
+            System.out.println("Hata: Bu dersi zaten almıyorsunuz.");
         }
     }
 
+    // Read-only liste döndürür (Güvenlik)
     public List<Course> getEnrolledCourses() {
         return Collections.unmodifiableList(enrolledCourses);
     }
