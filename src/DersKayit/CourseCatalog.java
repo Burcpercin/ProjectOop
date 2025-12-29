@@ -1,33 +1,73 @@
 package DersKayit;
 
+import java.io.*;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CourseManager {
-    private List<Courses> allCourses = new ArrayList<>();
+public class CourseCatalog {
+    private List<Course> allCourses;
+    private final String FILE_NAME = "courses.csv";
 
-    public void addCourse(Courses c) {
+    public CourseCatalog() {
+        this.allCourses = new ArrayList<>();
+        loadCoursesFromCSV(); // Başlarken yükle
+    }
+
+    // Dersi hem listeye hem dosyaya ekler
+    public void addCourse(Course c) {
         allCourses.add(c);
-        // İleride buraya 'courses.csv'ye yazma kodu eklenecek
+        saveCourseToCSV(c); 
+    }
+
+    public List<Course> getAllCourses() {
+        return allCourses;
+    }
+
+    public Course findCourseByCode(String code) {
+        for (Course c : allCourses) {
+            if (c.getCode().equalsIgnoreCase(code)) return c;
+        }
+        return null;
     }
 
     public void listCourses() {
         if (allCourses.isEmpty()) {
-            System.out.println("Sistemde açık ders yok.");
+            System.out.println("Listelenecek ders yok.");
         } else {
-            System.out.println("\n--- AÇILAN DERSLER ---");
-            for (Courses c : allCourses) {
-                System.out.println(c);
-            }
+            System.out.println("\n--- DERS KATALOĞU ---");
+            for (Course c : allCourses) System.out.println(c);
         }
     }
 
-    public Courses findCourseByCode(String code) {
-        for (Courses c : allCourses) {
-            if (c.getCourseCode().equalsIgnoreCase(code)) {
-                return c;
+    // --- DOSYA İŞLEMLERİ ---
+    private void loadCoursesFromCSV() {
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                String[] data = line.split(",");
+                if (data.length < 8) continue;
+
+                Course c = new Course(data[0], data[1], data[2], data[3], 
+                        LocalTime.parse(data[4]), LocalTime.parse(data[5]), 
+                        Integer.parseInt(data[6]), Integer.parseInt(data[7]));
+                allCourses.add(c);
             }
+        } catch (IOException e) {
+            System.out.println("Veri dosyası oluşturuluyor...");
         }
-        return null;
+    }
+
+    private void saveCourseToCSV(Course c) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
+            String line = String.format("%s,%s,%s,%s,%s,%s,%d,%d",
+                    c.getCode(), c.getName(), c.getInstructorName(), c.getDay(),
+                    c.getStartTime(), c.getEndTime(), c.getCapacity(), c.getGradeLevel());
+            bw.write(line);
+            bw.newLine();
+        } catch (IOException e) {
+            System.out.println("Dosya yazma hatası: " + e.getMessage());
+        }
     }
 }
