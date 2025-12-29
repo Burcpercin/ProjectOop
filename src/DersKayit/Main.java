@@ -25,6 +25,20 @@ public class Main {
                 String role = userData[2];
                 String name = userData[3];
                 System.out.println("Giriş Başarılı! Hoşgeldin " + name);
+
+                if (role.equals("student")) {
+                    int grade = Integer.parseInt(userData[4]);
+                    String type = userData[5];
+                    
+                    Student activeStudent;
+                    if (type.equalsIgnoreCase("grad")) {
+                        activeStudent = new GraduateStudent(user, name, grade, "Tez Konusu");
+                    } else {
+                        activeStudent = new Student(user, name, grade);
+                    }
+             // eklenecek       showStudentMenu(scanner, courseCatalog, activeStudent);
+
+                }
             }
         }
     }
