@@ -11,18 +11,15 @@ public class CourseCatalog {
 
     public CourseCatalog() {
         this.allCourses = new ArrayList<>();
-        loadCoursesFromCSV(); // Başlarken yükle
+        loadCoursesFromCSV();
     }
 
-    // Dersi hem listeye hem dosyaya ekler
     public void addCourse(Course c) {
         allCourses.add(c);
         saveCourseToCSV(c); 
     }
 
-    public List<Course> getAllCourses() {
-        return allCourses;
-    }
+    public List<Course> getAllCourses() { return allCourses; }
 
     public Course findCourseByCode(String code) {
         for (Course c : allCourses) {
@@ -40,30 +37,33 @@ public class CourseCatalog {
         }
     }
 
-    // --- DOSYA İŞLEMLERİ ---
     private void loadCoursesFromCSV() {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
                 String[] data = line.split(",");
-                if (data.length < 8) continue;
+                // Kredi eklendiği için artık en az 9 sütun olmalı
+                if (data.length < 9) continue; 
 
                 Course c = new Course(data[0], data[1], data[2], data[3], 
                         LocalTime.parse(data[4]), LocalTime.parse(data[5]), 
-                        Integer.parseInt(data[6]), Integer.parseInt(data[7]));
+                        Integer.parseInt(data[6]), Integer.parseInt(data[7]),
+                        Integer.parseInt(data[8])); // Kredi (Son sütun)
                 allCourses.add(c);
             }
         } catch (IOException e) {
-            System.out.println("Veri dosyası oluşturuluyor...");
+            System.out.println("Ders dosyası oluşturuluyor...");
         }
     }
 
     private void saveCourseToCSV(Course c) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
-            String line = String.format("%s,%s,%s,%s,%s,%s,%d,%d",
+            // Format: KOD,AD,HOCA,GÜN,BAŞLA,BİTİŞ,KAPASİTE,SINIF,KREDİ
+            String line = String.format("%s,%s,%s,%s,%s,%s,%d,%d,%d",
                     c.getCode(), c.getName(), c.getInstructorName(), c.getDay(),
-                    c.getStartTime(), c.getEndTime(), c.getCapacity(), c.getGradeLevel());
+                    c.getStartTime(), c.getEndTime(), c.getCapacity(), c.getGradeLevel(),
+                    c.getCredit()); // Kredi eklendi
             bw.write(line);
             bw.newLine();
         } catch (IOException e) {
