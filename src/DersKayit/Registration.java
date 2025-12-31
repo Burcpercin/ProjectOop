@@ -17,6 +17,14 @@ public class Registration {
     }
 
     public boolean completeRegistration() {
+    	
+    	// Zaten ekli mi?
+        if(student.getEnrolledCourses().contains(this.course)) {
+            System.out.println("UYARI: Bu ders zaten listenizde.");
+            this.status = "Failed - Already Enrolled";
+            return false;
+        }
+        
         //  Kontenjan Dolu mu?
         if (course.isFull()) {
             System.out.println("HATA: Kontenjan dolu! (" + course.getCapacity() + " kişilik yer doldu.)");
@@ -40,13 +48,6 @@ public class Registration {
             }
         }
         
-        // Zaten ekli mi?
-        if(student.getEnrolledCourses().contains(this.course)) {
-            System.out.println("UYARI: Bu ders zaten listenizde.");
-            this.status = "Failed - Already Enrolled";
-            return false;
-        }
-
         // Eğer kontrollere takılmadıysa dersi ekle
         student.registerForCourse(course);
         course.incrementEnrollment(); // Dersin mevcudunu 1 artırıyoruz.
