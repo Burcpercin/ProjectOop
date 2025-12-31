@@ -3,7 +3,8 @@
 
 	public interface Registrable {
 		
-	    void registerForCourse(Courses course);
+	    void registerForCourse(Course course);
 
 	}
 
+	
