@@ -6,10 +6,8 @@ import java.util.List;
 public class RegistrationManager {
     private final String FILE_NAME = "registrations.csv";
 
-    // Öğrenci derse kaydolunca dosyaya ekle
     public void saveRegistration(Student student, Course course) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
-            // Format: KullanıcıAdı,DersKodu
             bw.write(student.getStudentNumber() + "," + course.getCode());
             bw.newLine();
         } catch (IOException e) {
@@ -17,7 +15,6 @@ public class RegistrationManager {
         }
     }
 
-    // Ders bırakılınca dosyadan sil
     public void removeRegistration(Student student, Course course) {
         File inputFile = new File(FILE_NAME);
         File tempFile = new File("registrations_temp.csv");
@@ -29,7 +26,7 @@ public class RegistrationManager {
             String currentLine;
 
             while ((currentLine = reader.readLine()) != null) {
-                if (currentLine.trim().equals(lineToRemove)) continue; // Silinecek satırı atla
+                if (currentLine.trim().equals(lineToRemove)) continue;
                 writer.write(currentLine);
                 writer.newLine();
             }
@@ -37,13 +34,11 @@ public class RegistrationManager {
             System.out.println("Silme işleminde hata: " + e.getMessage());
         }
 
-        // Eski dosyayı sil, yenisinin adını değiştir
         if (inputFile.delete()) {
             tempFile.renameTo(inputFile);
         }
     }
 
-    // Program açılışında kayıtları geri yükle
     public void loadRegistrations(List<Student> allStudents, CourseCatalog catalog) {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
@@ -55,7 +50,6 @@ public class RegistrationManager {
                 String studentUser = data[0];
                 String courseCode = data[1];
 
-                // Öğrenciyi ve Dersi bul
                 Student foundStudent = null;
                 for (Student s : allStudents) {
                     if (s.getStudentNumber().equals(studentUser)) {
@@ -68,10 +62,14 @@ public class RegistrationManager {
 
                 if (foundStudent != null && foundCourse != null) {
                     foundStudent.loadEnrolledCourse(foundCourse);
+                    
+                    // Dosyadan eski kaydı yüklerken, dersin mevcut sayısını da artırıyoruz.
+                    // Böylece program açıldığında kontenjan bilgisi doğru gelir.
+                    foundCourse.incrementEnrollment();
                 }
             }
         } catch (IOException e) {
-            // Dosya yoksa sorun yok, ilk kez çalışıyordur.
+            // Dosya yoksa sorun yok.
         }
     }
 }
