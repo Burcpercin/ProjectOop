@@ -9,12 +9,11 @@ public class Main {
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        
         Authentication authService = new Authentication();
         CourseCatalog courseCatalog = new CourseCatalog();
         RegistrationManager regManager = new RegistrationManager();
-        
-        // Not yöneticisi
-        GradeManager gradeManager = new GradeManager();
+        GradeManager gradeManager = new GradeManager(); // Not yöneticisi
 
         System.out.println("=== ÖĞRENCİ DERS KAYIT SİSTEMİ ===");
 
@@ -43,13 +42,15 @@ public class Main {
                             activeStudent = new Student(user, name, grade);
                         }
 
-                        // Eski kayıtları yükle
+                        // --- Öğrenci Verilerini Yükleme ---
+                        // 1. Kayıtlı dersleri yükle
                         List<Student> tempStudentList = new ArrayList<>();
                         tempStudentList.add(activeStudent);
                         regManager.loadRegistrations(tempStudentList, courseCatalog);
                         
-                        // Notları yükle
+                        // 2. Notları yükle
                         gradeManager.loadGrades(tempStudentList);
+                        // ----------------------------------
 
                         showStudentMenu(scanner, courseCatalog, activeStudent, regManager);
                         break;
@@ -59,8 +60,8 @@ public class Main {
                         Instructor activeInstructor = new Instructor(name, dept);
                         activeInstructor.syncCoursesFromCatalog(courseCatalog);
                         
-                        // gradeManager'ı parametre olarak gönderiyoruz
-                        showInstructorMenu(scanner, courseCatalog, activeInstructor, gradeManager);
+                        // Hoca menüsüne hem not yöneticisini (gm) hem kayıt yöneticisini (rm) gönderiyoruz
+                        showInstructorMenu(scanner, courseCatalog, activeInstructor, gradeManager, regManager);
                         break;
 
                     default:
@@ -73,13 +74,13 @@ public class Main {
         }
     }
 
+    // Öğrenci menüsü
     public static void showStudentMenu(Scanner scanner, CourseCatalog cm, Student student, RegistrationManager rm) {
         boolean sessionActive = true;
         while (sessionActive) {
             System.out.println("\n--- ÖĞRENCİ PANELİ: " + student.getName() + " ---");
             System.out.println("Toplam Kredi: " + student.calculateTotalCredits()); 
-            // GPA Gösterimi
-            System.out.printf("Güncel GPA: %.2f\n", student.calculateGPA());
+            System.out.printf("Güncel GPA: %.2f\n", student.calculateGPA()); // GPA Gösterimi
             
             System.out.println("1. Dersleri Listele");
             System.out.println("2. Derse Kayıt Ol");
@@ -97,7 +98,6 @@ public class Main {
                     String code = scanner.nextLine();
                     Course c = cm.findCourseByCode(code);
                     if (c != null) {
-                        // Yeni kayıt mantığı (Registration class içindeki kontrollerle)
                         Registration reg = new Registration(student, c);
                         boolean success = reg.completeRegistration();
                         if(success) {
@@ -114,17 +114,17 @@ public class Main {
                         if(enrolled.getCode().equalsIgnoreCase(dropCode)) toDrop = enrolled;
                     }
                     if(toDrop != null) {
-                        student.dropCourse(toDrop);
-                        rm.removeRegistration(student, toDrop);
+                        student.dropCourse(toDrop); // Hem dersi hem notu RAM'den siler
+                        rm.removeRegistration(student, toDrop); // Dosyadan siler
                     } else System.out.println(">> Ders bulunamadı.");
                     break;
                 case "4":
                     if(student.getEnrolledCourses().isEmpty()) System.out.println(">> Dersiniz yok.");
                     else {
+                        System.out.println("\n--- DERSLERİM VE NOTLARIM ---");
                         for (Course enrolled : student.getEnrolledCourses()) {
-                            // Ders bilgisi + Not bilgisi
                             System.out.println(enrolled.getCode() + " - " + enrolled.getName());
-                            System.out.println("   -> " + student.getGradeDetails(enrolled.getCode()));
+                            System.out.println("   Durum: " + student.getGradeDetails(enrolled.getCode()));
                         }
                     }
                     break;
@@ -134,11 +134,11 @@ public class Main {
         }
     }
 
-    // Parametre olarak GradeManager eklendi
-    public static void showInstructorMenu(Scanner scanner, CourseCatalog cm, Instructor instructor, GradeManager gm) {
+    // Hoca menüsü
+    public static void showInstructorMenu(Scanner scanner, CourseCatalog cm, Instructor instructor, GradeManager gm, RegistrationManager rm) {
         boolean sessionActive = true;
         while (sessionActive) {
-            System.out.println("\n--- HOCA PANELİ ---");
+            System.out.println("\n--- ÖĞRETİM GÖREVLİSİ PANELİ: " + instructor.getName() + " ---");
             System.out.println("1. Yeni Ders Aç");
             System.out.println("2. Verdiğim Dersler");
             System.out.println("3. Not Girişi Yap");
@@ -161,42 +161,53 @@ public class Main {
                         Course newCourse = new Course(code, name, instructor.getName(), day, start, end, cap, grade, credit);
                         instructor.addCourseToTeach(newCourse);
                         cm.addCourse(newCourse);
-                        System.out.println(">> Ders kaydedildi.");
+                        System.out.println(">> Ders başarıyla oluşturuldu.");
                     } catch (Exception e) {
                         System.out.println("Hata: " + e.getMessage());
                     }
                     break;
                 case "2":
-                    if(instructor.getGivenCourses().isEmpty()) System.out.println("Dersiniz yok.");
+                    if(instructor.getGivenCourses().isEmpty()) System.out.println("Verdiğiniz ders yok.");
                     else for(Course c : instructor.getGivenCourses()) System.out.println(c);
                     break;
+                    
                 case "3": // NOT GİRİŞİ
                     System.out.print("Not girilecek ders kodu: ");
                     String code = scanner.nextLine();
                     
+                    // 1. Hoca bu dersi veriyor mu?
                     boolean isMyCourse = false;
                     for(Course c : instructor.getGivenCourses()) {
                         if(c.getCode().equalsIgnoreCase(code)) isMyCourse = true;
                     }
                     
                     if(!isMyCourse) {
-                        System.out.println("Hata: Bu dersi siz vermiyorsunuz veya ders yok.");
+                        System.out.println("Hata: Bu dersi siz vermiyorsunuz veya ders bulunamadı.");
                         break;
                     }
 
-                    System.out.print("Öğrenci Numarası (Kullanıcı Adı): ");
+                    // 2. Dersi alan öğrencileri listele (Hocaya kolaylık olsun)
+                    rm.printStudentsInCourse(code);
+
+                    // 3. Not girişi
+                    System.out.print("Öğrenci Numarası (ID): ");
                     String stdId = scanner.nextLine();
                     
-                    System.out.print("Vize Notu: ");
-                    int vize = Integer.parseInt(scanner.nextLine());
-                    System.out.print("Final Notu: ");
-                    int fin = Integer.parseInt(scanner.nextLine());
-
-                    // Notu kaydet
-                    gm.saveOrUpdateGrade(stdId, code, vize, fin);
-                    System.out.println(">> Not kaydedildi.");
+                    try {
+                        System.out.print("Vize Notu: ");
+                        int vize = Integer.parseInt(scanner.nextLine());
+                        System.out.print("Final Notu: ");
+                        int fin = Integer.parseInt(scanner.nextLine());
+    
+                        gm.saveOrUpdateGrade(stdId, code, vize, fin);
+                        System.out.println(">> Not başarıyla kaydedildi.");
+                    } catch (NumberFormatException e) {
+                        System.out.println("Hata: Notlar sayısal olmalıdır!");
+                    }
                     break;
+                    
                 case "4": sessionActive = false; break;
+                default: System.out.println("Geçersiz işlem.");
             }
         }
     }
