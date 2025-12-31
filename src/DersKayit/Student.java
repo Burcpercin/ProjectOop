@@ -19,7 +19,6 @@ public class Student implements Registrable {
 
     public double calculateTuition() { return 5000.0; }
 
-    // GPA Hesaplama taslağı (ders notu girme henüz yok).
     public int calculateTotalCredits() {
         int total = 0;
         for(Course c : enrolledCourses) {
@@ -36,7 +35,6 @@ public class Student implements Registrable {
         }
     }
 
-    //  Program açılışında kayıtlı dersleri csv dosyasından çekmek için
     public void loadEnrolledCourse(Course course) {
         if (!enrolledCourses.contains(course)) {
             enrolledCourses.add(course);
@@ -46,6 +44,7 @@ public class Student implements Registrable {
     public void dropCourse(Course course) {
         if (enrolledCourses.contains(course)) {
             enrolledCourses.remove(course);
+            course.decrementEnrollment(); // Dersi bırakınca kontenjan açılsın
             System.out.println(">> " + course.getCode() + " dersi bırakıldı.");
         } else {
             System.out.println(">> Hata: Bu dersi zaten almıyorsunuz.");
