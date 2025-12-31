@@ -6,14 +6,15 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-	
-    private static List<Student> loadedStudents = new ArrayList<>();
-
+    
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         Authentication authService = new Authentication();
         CourseCatalog courseCatalog = new CourseCatalog();
         RegistrationManager regManager = new RegistrationManager();
+        
+        // Not yöneticisi
+        GradeManager gradeManager = new GradeManager();
 
         System.out.println("=== ÖĞRENCİ DERS KAYIT SİSTEMİ ===");
 
@@ -42,12 +43,13 @@ public class Main {
                             activeStudent = new Student(user, name, grade);
                         }
 
-                        //  Öğrenci oluştu, hemen eski kayıtlarını yükle 
-                        // Geçici bir liste yapıp tek elemanla metoda yolluyoruz
+                        // Eski kayıtları yükle
                         List<Student> tempStudentList = new ArrayList<>();
                         tempStudentList.add(activeStudent);
                         regManager.loadRegistrations(tempStudentList, courseCatalog);
-                        // -----------------------------------------------------------------
+                        
+                        // Notları yükle
+                        gradeManager.loadGrades(tempStudentList);
 
                         showStudentMenu(scanner, courseCatalog, activeStudent, regManager);
                         break;
@@ -56,7 +58,9 @@ public class Main {
                         String dept = userData[5];
                         Instructor activeInstructor = new Instructor(name, dept);
                         activeInstructor.syncCoursesFromCatalog(courseCatalog);
-                        showInstructorMenu(scanner, courseCatalog, activeInstructor);
+                        
+                        // gradeManager'ı parametre olarak gönderiyoruz
+                        showInstructorMenu(scanner, courseCatalog, activeInstructor, gradeManager);
                         break;
 
                     default:
@@ -73,11 +77,14 @@ public class Main {
         boolean sessionActive = true;
         while (sessionActive) {
             System.out.println("\n--- ÖĞRENCİ PANELİ: " + student.getName() + " ---");
-            System.out.println("Toplam Kredi: " + student.calculateTotalCredits()); // GPA hazırlığı
+            System.out.println("Toplam Kredi: " + student.calculateTotalCredits()); 
+            // GPA Gösterimi
+            System.out.printf("Güncel GPA: %.2f\n", student.calculateGPA());
+            
             System.out.println("1. Dersleri Listele");
             System.out.println("2. Derse Kayıt Ol");
             System.out.println("3. Ders Bırak");
-            System.out.println("4. Ders Programım");
+            System.out.println("4. Ders Programım ve Notlar");
             System.out.println("5. Çıkış Yap");
             
             System.out.print("Seçiminiz: ");
@@ -90,10 +97,10 @@ public class Main {
                     String code = scanner.nextLine();
                     Course c = cm.findCourseByCode(code);
                     if (c != null) {
+                        // Yeni kayıt mantığı (Registration class içindeki kontrollerle)
                         Registration reg = new Registration(student, c);
                         boolean success = reg.completeRegistration();
                         if(success) {
-                            // Başarılıysa dosyaya da kaydet
                             rm.saveRegistration(student, c);
                             System.out.println(">> Kayıt dosyasına işlendi.");
                         }
@@ -108,13 +115,18 @@ public class Main {
                     }
                     if(toDrop != null) {
                         student.dropCourse(toDrop);
-                        // Dosyadan da sil
                         rm.removeRegistration(student, toDrop);
                     } else System.out.println(">> Ders bulunamadı.");
                     break;
                 case "4":
                     if(student.getEnrolledCourses().isEmpty()) System.out.println(">> Dersiniz yok.");
-                    else for (Course enrolled : student.getEnrolledCourses()) System.out.println(enrolled);
+                    else {
+                        for (Course enrolled : student.getEnrolledCourses()) {
+                            // Ders bilgisi + Not bilgisi
+                            System.out.println(enrolled.getCode() + " - " + enrolled.getName());
+                            System.out.println("   -> " + student.getGradeDetails(enrolled.getCode()));
+                        }
+                    }
                     break;
                 case "5": sessionActive = false; break;
                 default: System.out.println("Geçersiz seçim."); break;
@@ -122,13 +134,15 @@ public class Main {
         }
     }
 
-    public static void showInstructorMenu(Scanner scanner, CourseCatalog cm, Instructor instructor) {
+    // Parametre olarak GradeManager eklendi
+    public static void showInstructorMenu(Scanner scanner, CourseCatalog cm, Instructor instructor, GradeManager gm) {
         boolean sessionActive = true;
         while (sessionActive) {
             System.out.println("\n--- HOCA PANELİ ---");
             System.out.println("1. Yeni Ders Aç");
             System.out.println("2. Verdiğim Dersler");
-            System.out.println("3. Çıkış");
+            System.out.println("3. Not Girişi Yap");
+            System.out.println("4. Çıkış");
             System.out.print("Seçim: ");
             String choice = scanner.nextLine();
 
@@ -142,7 +156,7 @@ public class Main {
                         System.out.print("Bitir (SS:DD): "); LocalTime end = LocalTime.parse(scanner.nextLine());
                         System.out.print("Kontenjan: "); int cap = Integer.parseInt(scanner.nextLine());
                         System.out.print("Min Sınıf: "); int grade = Integer.parseInt(scanner.nextLine());
-                        System.out.print("Kredi (ECTS): "); int credit = Integer.parseInt(scanner.nextLine()); // YENİ
+                        System.out.print("Kredi (ECTS): "); int credit = Integer.parseInt(scanner.nextLine());
 
                         Course newCourse = new Course(code, name, instructor.getName(), day, start, end, cap, grade, credit);
                         instructor.addCourseToTeach(newCourse);
@@ -156,7 +170,33 @@ public class Main {
                     if(instructor.getGivenCourses().isEmpty()) System.out.println("Dersiniz yok.");
                     else for(Course c : instructor.getGivenCourses()) System.out.println(c);
                     break;
-                case "3": sessionActive = false; break;
+                case "3": // NOT GİRİŞİ
+                    System.out.print("Not girilecek ders kodu: ");
+                    String code = scanner.nextLine();
+                    
+                    boolean isMyCourse = false;
+                    for(Course c : instructor.getGivenCourses()) {
+                        if(c.getCode().equalsIgnoreCase(code)) isMyCourse = true;
+                    }
+                    
+                    if(!isMyCourse) {
+                        System.out.println("Hata: Bu dersi siz vermiyorsunuz veya ders yok.");
+                        break;
+                    }
+
+                    System.out.print("Öğrenci Numarası (Kullanıcı Adı): ");
+                    String stdId = scanner.nextLine();
+                    
+                    System.out.print("Vize Notu: ");
+                    int vize = Integer.parseInt(scanner.nextLine());
+                    System.out.print("Final Notu: ");
+                    int fin = Integer.parseInt(scanner.nextLine());
+
+                    // Notu kaydet
+                    gm.saveOrUpdateGrade(stdId, code, vize, fin);
+                    System.out.println(">> Not kaydedildi.");
+                    break;
+                case "4": sessionActive = false; break;
             }
         }
     }
