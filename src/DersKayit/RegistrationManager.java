@@ -1,11 +1,14 @@
 package DersKayit;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RegistrationManager {
     private final String FILE_NAME = "registrations.csv";
+    private final String USERS_FILE = "users.csv"; // İsimleri çekmek için lazım
 
+    // Öğrenci derse kaydolunca dosyaya ekle
     public void saveRegistration(Student student, Course course) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
             bw.write(student.getStudentNumber() + "," + course.getCode());
@@ -15,6 +18,7 @@ public class RegistrationManager {
         }
     }
 
+    // Ders bırakılınca dosyadan sil
     public void removeRegistration(Student student, Course course) {
         File inputFile = new File(FILE_NAME);
         File tempFile = new File("registrations_temp.csv");
@@ -39,6 +43,7 @@ public class RegistrationManager {
         }
     }
 
+    // Program açılışında kayıtları geri yükle
     public void loadRegistrations(List<Student> allStudents, CourseCatalog catalog) {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
             String line;
@@ -62,14 +67,56 @@ public class RegistrationManager {
 
                 if (foundStudent != null && foundCourse != null) {
                     foundStudent.loadEnrolledCourse(foundCourse);
-                    
-                    // Dosyadan eski kaydı yüklerken, dersin mevcut sayısını da artırıyoruz.
-                    // Böylece program açıldığında kontenjan bilgisi doğru gelir.
                     foundCourse.incrementEnrollment();
                 }
             }
         } catch (IOException e) {
             // Dosya yoksa sorun yok.
         }
+    }
+
+    // Bir dersteki öğrencileri listele
+    public void printStudentsInCourse(String courseCode) {
+        List<String> studentIds = new ArrayList<>();
+
+        // 1. Adım: registrations.csv dosyasından bu dersi alanların ID'lerini bul
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                String[] data = line.split(",");
+                if (data.length < 2) continue;
+                
+                // Eğer satırdaki ders kodu aradığımız kodsa, öğrenci ID'sini listeye al
+                if (data[1].equalsIgnoreCase(courseCode)) {
+                    studentIds.add(data[0]);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Kayıt dosyası okunamadı.");
+            return;
+        }
+
+        if (studentIds.isEmpty()) {
+            System.out.println(">> Bu derse kayıtlı öğrenci yok.");
+            return;
+        }
+
+        System.out.println("\n--- Dersi Alan Öğrenciler (" + courseCode + ") ---");
+        
+        // 2. Adım: users.csv dosyasından bu ID'lerin isimlerini bul ve yazdır
+        try (BufferedReader br = new BufferedReader(new FileReader(USERS_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                // data[0] = username (ID), data[3] = name
+                if (data.length > 3 && studentIds.contains(data[0])) {
+                    System.out.println("ID: " + data[0] + " | İsim: " + data[3]);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Kullanıcı listesi okunamadı.");
+        }
+        System.out.println("-------------------------------------------");
     }
 }
