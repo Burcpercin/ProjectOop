@@ -17,17 +17,24 @@ public class Registration {
     }
 
     public boolean completeRegistration() {
-        // Sınıf seviyesi yeterlimi?
+        //  Kontenjan Dolu mu?
+        if (course.isFull()) {
+            System.out.println("HATA: Kontenjan dolu! (" + course.getCapacity() + " kişilik yer doldu.)");
+            this.status = "Failed - Capacity Full";
+            return false;
+        }
+
+        // Sınıf seviyesi
         if (student.getGradeLevel() < course.getGradeLevel()) {
             System.out.println("HATA: Sınıf seviyesi yetersiz. (Gereken: " + course.getGradeLevel() + ")");
             this.status = "Failed - Grade Level";
             return false;
         }
 
-        // Ders saatleri çakışıyor mu?
+        // Çakışma
         for (Course enrolled : student.getEnrolledCourses()) {
             if (enrolled.hasConflict(this.course)) {
-                System.out.println("HATA: Ders saati çakışıyor! (" + enrolled.getCourseName() + " ile)");
+                System.out.println("HATA: Ders saati çakışıyor! (" + enrolled.getName() + " ile)");
                 this.status = "Failed - Conflict";
                 return false;
             }
@@ -40,8 +47,10 @@ public class Registration {
             return false;
         }
 
-        // Eğer kontrollere takılmaadıysa dersi ekle
+        // Eğer kontrollere takılmadıysa dersi ekle
         student.registerForCourse(course);
+        course.incrementEnrollment(); // Dersin mevcudunu 1 artırıyoruz.
+        
         this.status = "Success";
         return true;
     }
