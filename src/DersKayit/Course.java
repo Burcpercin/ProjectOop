@@ -9,11 +9,12 @@ public class Course {
     private String day;
     private LocalTime startTime;
     private LocalTime endTime;
-    private int capacity;
+    private int capacity;       // Toplam kontenjan
     private int gradeLevel;
-    
-    //  Kredi 
     private int credit; 
+    
+    // Mevcut öğrenci sayısı
+    private int currentEnrollment = 0; 
 
     public Course(String code, String name, String instructorName, String day, 
                   LocalTime startTime, LocalTime endTime, int capacity, int gradeLevel, int credit) {
@@ -26,7 +27,29 @@ public class Course {
         this.capacity = capacity;
         this.gradeLevel = gradeLevel;
         this.credit = credit; 
+        this.currentEnrollment = 0; // Başlangıçta 0
     }
+
+    
+    // Kontenjan doldu mu?
+    public boolean isFull() {
+        return currentEnrollment >= capacity;
+    }
+
+    // Öğrenci eklendiğinde sayıyı artır
+    public void incrementEnrollment() {
+        if (currentEnrollment < capacity) {
+            currentEnrollment++;
+        }
+    }
+
+    // Öğrenci dersi bırakırsa sayıyı azalt
+    public void decrementEnrollment() {
+        if (currentEnrollment > 0) {
+            currentEnrollment--;
+        }
+    }
+
 
     public boolean hasConflict(Course other) {
         if (!this.day.equalsIgnoreCase(other.day)) return false;
@@ -43,10 +66,12 @@ public class Course {
     public int getCapacity() { return capacity; }
     public int getGradeLevel() { return gradeLevel; }
     public int getCredit() { return credit; } 
+    public int getCurrentEnrollment() { return currentEnrollment; } // Yeni getter
 
     @Override
     public String toString() {
-        return String.format("[%s] %s (Kredi: %d, Sınıf: %d) | %s %s-%s | Hoca: %s", 
-                code, name, credit, gradeLevel, day, startTime, endTime, instructorName);
+        // Çıktıda artık kontenjan durumunu da (Örn: [5/20]) görüyoruz
+        return String.format("[%s] %s (Kr:%d Sın:%d) | %s %s-%s | Kapasite: %d/%d | Hoca: %s", 
+                code, name, credit, gradeLevel, day, startTime, endTime, currentEnrollment, capacity, instructorName);
     }
 }
