@@ -13,7 +13,7 @@ public class Main {
         Authentication authService = new Authentication();
         CourseCatalog courseCatalog = new CourseCatalog();
         RegistrationManager regManager = new RegistrationManager();
-        GradeManager gradeManager = new GradeManager(); // Not yöneticisi
+        GradeManager gradeManager = new GradeManager(); 
 
         System.out.println("=== ÖĞRENCİ DERS KAYIT SİSTEMİ ===");
 
@@ -26,7 +26,7 @@ public class Main {
             String[] userData = authService.login(user, pass);
 
             if (userData != null) {
-                String role = userData[2];
+                String role = userData[2]; 
                 String name = userData[3];
                 System.out.println(">> Giriş Başarılı! Hoşgeldin " + name);
 
@@ -42,15 +42,11 @@ public class Main {
                             activeStudent = new Student(user, name, grade);
                         }
 
-                        // --- Öğrenci Verilerini Yükleme ---
-                        // 1. Kayıtlı dersleri yükle
+                        // Verileri Yükle
                         List<Student> tempStudentList = new ArrayList<>();
                         tempStudentList.add(activeStudent);
                         regManager.loadRegistrations(tempStudentList, courseCatalog);
-                        
-                        // 2. Notları yükle
                         gradeManager.loadGrades(tempStudentList);
-                        // ----------------------------------
 
                         showStudentMenu(scanner, courseCatalog, activeStudent, regManager);
                         break;
@@ -60,9 +56,13 @@ public class Main {
                         Instructor activeInstructor = new Instructor(name, dept);
                         activeInstructor.syncCoursesFromCatalog(courseCatalog);
                         
-                        // Hoca menüsüne hem not yöneticisini (gm) hem kayıt yöneticisini (rm) gönderiyoruz
                         showInstructorMenu(scanner, courseCatalog, activeInstructor, gradeManager, regManager);
                         break;
+                    
+                    case "admin":
+                        showAdminMenu(scanner, authService, name);
+                        break;
+
 
                     default:
                         System.out.println("Hata: Tanımsız rol!");
@@ -74,18 +74,89 @@ public class Main {
         }
     }
 
-    // Öğrenci menüsü
+    // Admin Menü
+    public static void showAdminMenu(Scanner scanner, Authentication auth, String adminName) {
+        boolean sessionActive = true;
+        while (sessionActive) {
+            System.out.println("\n--- YÖNETİCİ PANELİ: " + adminName + " ---");
+            System.out.println("1. Yeni Öğrenci Ekle");
+            System.out.println("2. Yeni Öğretim Görevlisi Ekle");
+            System.out.println("3. Yeni Admin Ekle");
+            System.out.println("4. Tüm Kullanıcıları Listele");
+            System.out.println("5. Çıkış");
+            
+            System.out.print("Seçim: ");
+            String choice = scanner.nextLine();
+
+            String uName, pass, name;
+
+            switch (choice) {
+                case "1": // Student EKLE
+                    System.out.println("\n--- Yeni Öğrenci Kaydı ---");
+                    System.out.print("Kullanıcı Adı (Öğrenci No): "); uName = scanner.nextLine();
+                    if(auth.isUserExists(uName)) { System.out.println(">> Bu kullanıcı zaten var!"); break; }
+
+                    System.out.print("Şifre: "); pass = scanner.nextLine();
+                    System.out.print("Ad Soyad: "); name = scanner.nextLine();
+                    System.out.print("Sınıf Seviyesi (1-4): "); String gradeLvl = scanner.nextLine();
+                    System.out.print("Tip (undergrad/grad): "); String stdType = scanner.nextLine();
+
+                    if(auth.registerUser(uName, pass, "student", name, gradeLvl, stdType)) {
+                        System.out.println(">> Öğrenci başarıyla eklendi.");
+                    }
+                    break;
+
+                case "2": // Instructor EKLE
+                    System.out.println("\n--- Yeni Hoca Kaydı ---");
+                    System.out.print("Kullanıcı Adı: "); uName = scanner.nextLine();
+                    if(auth.isUserExists(uName)) { System.out.println(">> Bu kullanıcı zaten var!"); break; }
+
+                    System.out.print("Şifre: "); pass = scanner.nextLine();
+                    System.out.print("Ad Soyad: "); name = scanner.nextLine();
+                    System.out.print("Departman: "); String dept = scanner.nextLine();
+                    
+                    // Hoca için 6. sütuna boş değer yerine "-" atıyoruz
+                    if(auth.registerUser(uName, pass, "instructor", name, "-", dept)) {
+                        System.out.println(">> Hoca başarıyla eklendi.");
+                    }
+                    break;
+                
+                case "3": // ADMIN EKLE
+                    System.out.println("\n--- Yeni Admin Kaydı ---");
+                    System.out.print("Kullanıcı Adı: "); uName = scanner.nextLine();
+                    if(auth.isUserExists(uName)) { System.out.println(">> Bu kullanıcı zaten var!"); break; }
+                    
+                    System.out.print("Şifre: "); pass = scanner.nextLine();
+                    System.out.print("Ad Soyad: "); name = scanner.nextLine();
+                    
+                    // Admin için son iki sütuna "-" atıyoruz
+                    if(auth.registerUser(uName, pass, "admin", name, "-", "-")) {
+                        System.out.println(">> Admin başarıyla eklendi.");
+                    }
+                    break;
+
+                case "4": // LİSTELE
+                    auth.listAllUsers();
+                    break;
+
+                case "5": sessionActive = false; break;
+                default: System.out.println("Geçersiz seçim.");
+            }
+        }
+    }
+
+    // Student Menüsü 
     public static void showStudentMenu(Scanner scanner, CourseCatalog cm, Student student, RegistrationManager rm) {
         boolean sessionActive = true;
         while (sessionActive) {
             System.out.println("\n--- ÖĞRENCİ PANELİ: " + student.getName() + " ---");
             System.out.println("Toplam Kredi: " + student.calculateTotalCredits()); 
-            System.out.printf("Güncel GPA: %.2f\n", student.calculateGPA()); // GPA Gösterimi
+            System.out.printf("Güncel GPA: %.2f\n", student.calculateGPA()); 
             
             System.out.println("1. Dersleri Listele");
             System.out.println("2. Derse Kayıt Ol");
             System.out.println("3. Ders Bırak");
-            System.out.println("4. Ders Programım ve Notlar");
+            System.out.println("4. Transkript");
             System.out.println("5. Çıkış Yap");
             
             System.out.print("Seçiminiz: ");
@@ -114,8 +185,8 @@ public class Main {
                         if(enrolled.getCode().equalsIgnoreCase(dropCode)) toDrop = enrolled;
                     }
                     if(toDrop != null) {
-                        student.dropCourse(toDrop); // Hem dersi hem notu RAM'den siler
-                        rm.removeRegistration(student, toDrop); // Dosyadan siler
+                        student.dropCourse(toDrop);
+                        rm.removeRegistration(student, toDrop);
                     } else System.out.println(">> Ders bulunamadı.");
                     break;
                 case "4":
@@ -124,7 +195,7 @@ public class Main {
                         System.out.println("\n--- DERSLERİM VE NOTLARIM ---");
                         for (Course enrolled : student.getEnrolledCourses()) {
                             System.out.println(enrolled.getCode() + " - " + enrolled.getName());
-                            System.out.println("   Durum: " + student.getGradeDetails(enrolled.getCode()));
+                            System.out.println("   Transkript: " + student.getGradeDetails(enrolled.getCode()));
                         }
                     }
                     break;
@@ -134,7 +205,7 @@ public class Main {
         }
     }
 
-    // Hoca menüsü
+    // Instuctor Menüsü
     public static void showInstructorMenu(Scanner scanner, CourseCatalog cm, Instructor instructor, GradeManager gm, RegistrationManager rm) {
         boolean sessionActive = true;
         while (sessionActive) {
@@ -171,11 +242,10 @@ public class Main {
                     else for(Course c : instructor.getGivenCourses()) System.out.println(c);
                     break;
                     
-                case "3": // NOT GİRİŞİ
+                case "3":
                     System.out.print("Not girilecek ders kodu: ");
                     String code = scanner.nextLine();
                     
-                    // 1. Hoca bu dersi veriyor mu?
                     boolean isMyCourse = false;
                     for(Course c : instructor.getGivenCourses()) {
                         if(c.getCode().equalsIgnoreCase(code)) isMyCourse = true;
@@ -186,10 +256,8 @@ public class Main {
                         break;
                     }
 
-                    // 2. Dersi alan öğrencileri listele (Hocaya kolaylık olsun)
                     rm.printStudentsInCourse(code);
 
-                    // 3. Not girişi
                     System.out.print("Öğrenci Numarası (ID): ");
                     String stdId = scanner.nextLine();
                     
