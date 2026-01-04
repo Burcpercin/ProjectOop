@@ -43,13 +43,13 @@ public class CourseCatalog {
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
                 String[] data = line.split(",");
-                // Kredi eklendiği için artık en az 9 sütun olmalı
-                if (data.length < 9) continue; 
+                if (data.length < 10) continue; 
 
+                // data[9] -> Department
                 Course c = new Course(data[0], data[1], data[2], data[3], 
                         LocalTime.parse(data[4]), LocalTime.parse(data[5]), 
                         Integer.parseInt(data[6]), Integer.parseInt(data[7]),
-                        Integer.parseInt(data[8])); // Kredi (Son sütun)
+                        Integer.parseInt(data[8]), data[9]); 
                 allCourses.add(c);
             }
         } catch (IOException e) {
@@ -59,11 +59,11 @@ public class CourseCatalog {
 
     private void saveCourseToCSV(Course c) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
-            // Format: KOD,AD,HOCA,GÜN,BAŞLA,BİTİŞ,KAPASİTE,SINIF,KREDİ
-            String line = String.format("%s,%s,%s,%s,%s,%s,%d,%d,%d",
+            // Format: ...,KREDİ,BÖLÜM
+            String line = String.format("%s,%s,%s,%s,%s,%s,%d,%d,%d,%s",
                     c.getCode(), c.getName(), c.getInstructorName(), c.getDay(),
                     c.getStartTime(), c.getEndTime(), c.getCapacity(), c.getGradeLevel(),
-                    c.getCredit()); // Kredi eklendi
+                    c.getCredit(), c.getDepartment()); 
             bw.write(line);
             bw.newLine();
         } catch (IOException e) {
