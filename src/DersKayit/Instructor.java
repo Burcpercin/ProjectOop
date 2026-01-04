@@ -14,11 +14,9 @@ public class Instructor {
         this.givenCourses = new ArrayList<>();
     }
 
-    // Hoca giriş yapınca derslerini katalogdan çeker 
     public void syncCoursesFromCatalog(CourseCatalog catalog) {
         this.givenCourses.clear();
         for (Course c : catalog.getAllCourses()) {
-            // İsim eşleşiyorsa bu ders hocanındır
             if (c.getInstructorName().equalsIgnoreCase(this.name)) {
                 this.givenCourses.add(c);
             }
@@ -26,10 +24,10 @@ public class Instructor {
     }
 
     public void addCourseToTeach(Course course) {
-        // Sadece yerel listeye ekler, CSV kaydını Catalog yapar.
         givenCourses.add(course);
     }
 
     public String getName() { return name; }
     public List<Course> getGivenCourses() { return givenCourses; }
+    public String getDepartment() { return department; }
 }
