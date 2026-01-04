@@ -3,9 +3,9 @@ package DersKayit;
 public class GraduateStudent extends Student {
     private String thesisTopic;
 
-    // Main'den gelen username'i, Student sınıfındaki studentNumber yerine gönderiyoruz.
+
     public GraduateStudent(String studentNumber, String name, int gradeLevel, String thesisTopic) {
-        super(studentNumber, name, gradeLevel);
+        super(studentNumber, name, gradeLevel, thesisTopic);
         this.thesisTopic = thesisTopic;
     }
 
