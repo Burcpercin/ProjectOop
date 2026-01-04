@@ -265,7 +265,7 @@ public class Main {
             System.out.println("1. Dersleri Listele");
             System.out.println("2. Derse Kayıt Ol");
             System.out.println("3. Ders Bırak");
-            System.out.println("4. Transkript");
+            System.out.println("4. Derslerim ve Notlarım");
             System.out.println("5. Çıkış Yap");
             
             System.out.print("Seçiminiz: ");
@@ -289,7 +289,7 @@ public class Main {
                 case "3":
                 	// Hiç dersi var mı?
                     if (!student.hasAnyEnrolledCourse()) {
-                        System.out.println(">> HATA: Şu an kayıtlı olduğunuz hiçbir ders yok. Bırakma işlemi yapılamaz.");
+                        System.out.println(">> HATA: Şu an kayıtlı olduğunuz hiçbir ders yok. Bu işlem yapılamaz.");
                         break; // Döngünün başına dön
                     }
 
@@ -319,7 +319,7 @@ public class Main {
                     }
                     break;
                 case "4":
-                    if(student.getEnrolledCourses().isEmpty()) System.out.println(">> Dersiniz yok.");
+                    if(!student.hasAnyEnrolledCourse()) System.out.println(">> HATA: Şu an kayıtlı olduğunuz hiçbir ders yok. Bu işlem yapılamaz.");
                     else {
                         System.out.println("\n--- DERSLERİM VE NOTLARIM ---");
                         for (Course enrolled : student.getEnrolledCourses()) {
