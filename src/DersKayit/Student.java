@@ -10,22 +10,22 @@ public class Student implements Registrable {
     private String studentNumber; 
     private String name;
     private int gradeLevel;
-    private List<Course> enrolledCourses;
+    private String department;
     
-    // Notları tutan yapı (Ders Kodu -> Not Kaydı)
+    private List<Course> enrolledCourses;
     private Map<String, GradeRecord> courseGrades;
 
-    public Student(String studentNumber, String name, int gradeLevel) {
+    public Student(String studentNumber, String name, int gradeLevel, String department) {
         this.studentNumber = studentNumber;
         this.name = name;
         this.gradeLevel = gradeLevel;
+        this.department = department;
         this.enrolledCourses = new ArrayList<>();
-        this.courseGrades = new HashMap<>();
+        this.courseGrades = new HashMap<>(); 
     }
 
-    // DERS KONTROLÜ
+    // Not Giriş Kısıtlaması
     public void addGrade(String courseCode, int midterm, int finalExam) {
-        // Öğrenci bu dersi gerçekten alıyor mu?
         boolean isTakingCourse = false;
         for(Course c : enrolledCourses) {
             if(c.getCode().equalsIgnoreCase(courseCode)) {
@@ -35,38 +35,27 @@ public class Student implements Registrable {
         }
 
         if (isTakingCourse) {
-            // GradeRecord constructor'ı 0-100 kontrolünü yapacak
             GradeRecord record = new GradeRecord(midterm, finalExam);
             courseGrades.put(courseCode, record);
         } else {
-            // Öğrenci dersi almıyorsa not girilemez
             throw new IllegalArgumentException("Hata: Öğrenci (" + this.name + ") bu dersi almıyor.");
         }
     }
-    // -----------------------------------------------
 
-    // GPA Hesaplama
     public double calculateGPA() {
         double totalPoints = 0.0;
         double totalCredits = 0.0;
-
         for (Course course : enrolledCourses) {
-            // Eğer bu dersin notu girilmişse
             if (courseGrades.containsKey(course.getCode())) {
                 GradeRecord grade = courseGrades.get(course.getCode());
-                double coefficient = grade.getCoefficient(); // 4.0, 3.5 vs.
-                int credit = course.getCredit();
-                
-                totalPoints += (coefficient * credit);
-                totalCredits += credit;
+                totalPoints += (grade.getCoefficient() * course.getCredit());
+                totalCredits += course.getCredit();
             }
         }
-
         if (totalCredits == 0) return 0.0;
         return totalPoints / totalCredits;
     }
     
-    // Öğrenci menüsünde notu göstermek için yardımcı metot
     public String getGradeDetails(String courseCode) {
         if(courseGrades.containsKey(courseCode)) {
             return courseGrades.get(courseCode).toString();
@@ -78,9 +67,7 @@ public class Student implements Registrable {
 
     public int calculateTotalCredits() {
         int total = 0;
-        for(Course c : enrolledCourses) {
-            total += c.getCredit();
-        }
+        for(Course c : enrolledCourses) total += c.getCredit();
         return total;
     }
 
@@ -88,12 +75,9 @@ public class Student implements Registrable {
     public void registerForCourse(Course course) {
         if (!enrolledCourses.contains(course)) {
             enrolledCourses.add(course);
-            // System.out.println mesajlarını Registration class'ı hallediyor, 
-            // burası sadece veri yapısına ekler.
         }
     }
 
-    // Program açılışında dosya yükleme işlemi için
     public void loadEnrolledCourse(Course course) {
         if (!enrolledCourses.contains(course)) {
             enrolledCourses.add(course);
@@ -103,19 +87,17 @@ public class Student implements Registrable {
     public void dropCourse(Course course) {
         if (enrolledCourses.contains(course)) {
             enrolledCourses.remove(course);
-            course.decrementEnrollment(); // Kontenjanı aç
-            courseGrades.remove(course.getCode()); // Dersi bırakırsa notunu da sil
+            course.decrementEnrollment(); 
+            courseGrades.remove(course.getCode()); 
             System.out.println(">> " + course.getCode() + " dersi bırakıldı.");
         } else {
             System.out.println(">> Hata: Bu dersi zaten almıyorsunuz.");
         }
     }
 
-    public List<Course> getEnrolledCourses() {
-        return Collections.unmodifiableList(enrolledCourses);
-    }
-    
+    public List<Course> getEnrolledCourses() { return Collections.unmodifiableList(enrolledCourses); }
     public String getName() { return name; }
     public int getGradeLevel() { return gradeLevel; }
     public String getStudentNumber() { return studentNumber; }
+    public String getDepartment() { return department; }
 }
