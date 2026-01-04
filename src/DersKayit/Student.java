@@ -100,4 +100,7 @@ public class Student implements Registrable {
     public int getGradeLevel() { return gradeLevel; }
     public String getStudentNumber() { return studentNumber; }
     public String getDepartment() { return department; }
+    public boolean hasAnyEnrolledCourse() {
+        return !enrolledCourses.isEmpty();
+    }
 }
