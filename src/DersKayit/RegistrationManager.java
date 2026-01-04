@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RegistrationManager {
+    private Course course;
     private final String FILE_NAME = "registrations.csv";
     private final String USERS_FILE = "users.csv"; // İsimleri çekmek için lazım
 
@@ -20,6 +21,8 @@ public class RegistrationManager {
 
     // Ders bırakılınca dosyadan sil
     public void removeRegistration(Student student, Course course) {
+    	// Öğrenci hiç ders alıyormu?
+    	if(!(student.getEnrolledCourses().contains(this.course))) {
         File inputFile = new File(FILE_NAME);
         File tempFile = new File("registrations_temp.csv");
 
@@ -42,7 +45,11 @@ public class RegistrationManager {
             tempFile.renameTo(inputFile);
         }
     }
-
+    else {
+    	System.out.println("Zaten hiçbir derse kayıtlı değilsiniz.");
+    }
+    
+    }
     // Program açılışında kayıtları geri yükle
     public void loadRegistrations(List<Student> allStudents, CourseCatalog catalog) {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
