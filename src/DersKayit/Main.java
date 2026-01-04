@@ -287,16 +287,36 @@ public class Main {
                     } else System.out.println(">> Ders bulunamadı.");
                     break;
                 case "3":
+                	// Hiç dersi var mı?
+                    if (!student.hasAnyEnrolledCourse()) {
+                        System.out.println(">> HATA: Şu an kayıtlı olduğunuz hiçbir ders yok. Bırakma işlemi yapılamaz.");
+                        break; // Döngünün başına dön
+                    }
+
+                    // Bırakabileceği dersleri gösterelim
+                    System.out.println("\n--- Kayıtlı Olduğunuz Dersler ---");
+                    for(Course course : student.getEnrolledCourses()) {
+                        System.out.println("- " + course.getCode() + " : " + course.getName());
+                    }
+                    System.out.println("---------------------------------");
+
                     System.out.print("Bırakılacak Ders Kodu: ");
                     String dropCode = scanner.nextLine();
+                    
                     Course toDrop = null;
                     for(Course enrolled : student.getEnrolledCourses()) {
-                        if(enrolled.getCode().equalsIgnoreCase(dropCode)) toDrop = enrolled;
+                        if(enrolled.getCode().equalsIgnoreCase(dropCode)) {
+                            toDrop = enrolled;
+                            break;
+                        }
                     }
+                    
                     if(toDrop != null) {
                         student.dropCourse(toDrop);
                         rm.removeRegistration(student, toDrop);
-                    } else System.out.println(">> Ders bulunamadı veya almıyorsunuz.");
+                    } else {
+                        System.out.println(">> Hata: Girdiğiniz kodlu ders listenizde bulunamadı.");
+                    }
                     break;
                 case "4":
                     if(student.getEnrolledCourses().isEmpty()) System.out.println(">> Dersiniz yok.");
