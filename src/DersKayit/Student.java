@@ -20,15 +20,30 @@ public class Student implements Registrable {
         this.name = name;
         this.gradeLevel = gradeLevel;
         this.enrolledCourses = new ArrayList<>();
-        this.courseGrades = new HashMap<>(); // Map başlatılıyor
+        this.courseGrades = new HashMap<>();
     }
 
-    // Not Ekleme Metodu
+    // DERS KONTROLÜ
     public void addGrade(String courseCode, int midterm, int finalExam) {
-        // Not sadece alınan derslere girilebilir
-        GradeRecord record = new GradeRecord(midterm, finalExam);
-        courseGrades.put(courseCode, record);
+        // Öğrenci bu dersi gerçekten alıyor mu?
+        boolean isTakingCourse = false;
+        for(Course c : enrolledCourses) {
+            if(c.getCode().equalsIgnoreCase(courseCode)) {
+                isTakingCourse = true;
+                break;
+            }
+        }
+
+        if (isTakingCourse) {
+            // GradeRecord constructor'ı 0-100 kontrolünü yapacak
+            GradeRecord record = new GradeRecord(midterm, finalExam);
+            courseGrades.put(courseCode, record);
+        } else {
+            // Öğrenci dersi almıyorsa not girilemez
+            throw new IllegalArgumentException("Hata: Öğrenci (" + this.name + ") bu dersi almıyor.");
+        }
     }
+    // -----------------------------------------------
 
     // GPA Hesaplama
     public double calculateGPA() {
@@ -73,10 +88,12 @@ public class Student implements Registrable {
     public void registerForCourse(Course course) {
         if (!enrolledCourses.contains(course)) {
             enrolledCourses.add(course);
-            System.out.println(">> " + course.getCode() + " dersi profiline eklendi.");
+            // System.out.println mesajlarını Registration class'ı hallediyor, 
+            // burası sadece veri yapısına ekler.
         }
     }
 
+    // Program açılışında dosya yükleme işlemi için
     public void loadEnrolledCourse(Course course) {
         if (!enrolledCourses.contains(course)) {
             enrolledCourses.add(course);
