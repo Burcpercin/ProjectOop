@@ -1,20 +1,22 @@
 package DersKayit;
 
 public class GradeRecord {
-    private int midterm; // Vize
-    private int finalExam; // Final
+    private int midterm;
+    private int finalExam;
 
     public GradeRecord(int midterm, int finalExam) {
+        if (midterm < 0 || midterm > 100 || finalExam < 0 || finalExam > 100) {
+            throw new IllegalArgumentException("Notlar 0-100 aralığında olmalıdır!");
+        }
+        
         this.midterm = midterm;
         this.finalExam = finalExam;
     }
 
-    // 1. Ortalama Hesapla (%40 Vize, %60 Final)
     public double calculateAverage() {
         return (midterm * 0.40) + (finalExam * 0.60);
     }
-
-    // 2. Ortalamaya Göre Harf Notunu Bul
+    
     public String getLetterGrade() {
         double avg = calculateAverage();
         if (avg >= 90) return "AA";
@@ -28,7 +30,6 @@ public class GradeRecord {
         else return "FF";
     }
 
-    // 3. Harf Notuna Göre Katsayı (GPA için lazım)
     public double getCoefficient() {
         String letter = getLetterGrade();
         switch (letter) {
@@ -39,7 +40,7 @@ public class GradeRecord {
             case "CC": return 2.0;
             case "DC": return 1.5;
             case "DD": return 1.0;
-            default: return 0.0; // FF ve FD
+            default: return 0.0;
         }
     }
 
