@@ -9,15 +9,17 @@ public class Course {
     private String day;
     private LocalTime startTime;
     private LocalTime endTime;
-    private int capacity;       // Toplam kontenjan
+    private int capacity;
     private int gradeLevel;
     private int credit; 
     
-    // Mevcut öğrenci sayısı
+    // Dersin Bölümü 
+    private String department;
+    
     private int currentEnrollment = 0; 
 
     public Course(String code, String name, String instructorName, String day, 
-                  LocalTime startTime, LocalTime endTime, int capacity, int gradeLevel, int credit) {
+                  LocalTime startTime, LocalTime endTime, int capacity, int gradeLevel, int credit, String department) {
         this.code = code;
         this.name = name;
         this.instructorName = instructorName;
@@ -27,29 +29,15 @@ public class Course {
         this.capacity = capacity;
         this.gradeLevel = gradeLevel;
         this.credit = credit; 
-        this.currentEnrollment = 0; // Başlangıçta 0
+        this.department = department; 
+        this.currentEnrollment = 0;
     }
 
-    
-    // Kontenjan doldu mu?
-    public boolean isFull() {
-        return currentEnrollment >= capacity;
-    }
+    public boolean isFull() { return currentEnrollment >= capacity; }
 
-    // Öğrenci eklendiğinde sayıyı artır
-    public void incrementEnrollment() {
-        if (currentEnrollment < capacity) {
-            currentEnrollment++;
-        }
-    }
+    public void incrementEnrollment() { if (currentEnrollment < capacity) currentEnrollment++; }
 
-    // Öğrenci dersi bırakırsa sayıyı azalt
-    public void decrementEnrollment() {
-        if (currentEnrollment > 0) {
-            currentEnrollment--;
-        }
-    }
-
+    public void decrementEnrollment() { if (currentEnrollment > 0) currentEnrollment--; }
 
     public boolean hasConflict(Course other) {
         if (!this.day.equalsIgnoreCase(other.day)) return false;
@@ -66,12 +54,12 @@ public class Course {
     public int getCapacity() { return capacity; }
     public int getGradeLevel() { return gradeLevel; }
     public int getCredit() { return credit; } 
-    public int getCurrentEnrollment() { return currentEnrollment; } // Yeni getter
+    public int getCurrentEnrollment() { return currentEnrollment; }
+    public String getDepartment() { return department; } // YENİ Getter
 
     @Override
     public String toString() {
-        // Çıktıda artık kontenjan durumunu da (Örn: [5/20]) görüyoruz
-        return String.format("[%s] %s (Kr:%d Sın:%d) | %s %s-%s | Kapasite: %d/%d | Hoca: %s", 
-                code, name, credit, gradeLevel, day, startTime, endTime, currentEnrollment, capacity, instructorName);
+        return String.format("[%s] %s (%s) | Kr:%d Sın:%d | %s %s-%s | Kapasite: %d/%d | Hoca: %s", 
+                code, name, department, credit, gradeLevel, day, startTime, endTime, currentEnrollment, capacity, instructorName);
     }
 }
