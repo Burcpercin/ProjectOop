@@ -100,7 +100,7 @@ public class Main {
                         
                         if(isCommon.equalsIgnoreCase("E")) {
                             courseDept = "Ortak";
-                            System.out.println(">> Ders 'Ortak' havuzuna eklendi.");
+                            System.out.println(">> Ders 'Ortak' derslere eklendi.");
                         } else {
                             courseDept = instructor.getDepartment();
                             System.out.println(">> Ders '" + courseDept + "' bölümüne eklendi.");
