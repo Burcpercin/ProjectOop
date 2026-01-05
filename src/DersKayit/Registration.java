@@ -1,6 +1,5 @@
 package DersKayit;
 
-import java.time.LocalDateTime;
 
 public class Registration {
 
