@@ -1,5 +1,3 @@
-ali,123,student,Ali Veli,1,ugrad
-kocatekin,0101,instructor,Tuğberk Kocatekin,Bilgisayar,none
-veli,321,student,Veli Ali,4,grad
-osman,111,student,Cedi Osman,2,grad
-cevik,1010,instructor,Taner Çevik,Bilgisayar,none
+admin,admin,admin,Sistem Yöneticisi,-,-,-
+kocatekin,1221,instructor,Tuğberk Kocatekin,-,Bilgisayar Müh.,-
+23,000,student,Burç Perçin,3,undergrad,Bilgisayar Müh.
