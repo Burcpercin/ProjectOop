@@ -8,7 +8,13 @@ public class GradeManager {
 
     // Notu kaydeder veya günceller
     public void saveOrUpdateGrade(String studentId, String courseCode, int midterm, int finalExam) {
-        // Önce eski kaydı (varsa) dosyadan temizlememiz lazım ki çift kayıt olmasın.
+        
+        // 1. GÜVENLİK KONTROLÜ: 0-100 Aralığı
+        // Eğer notlar bu aralıkta değilse, hata fırlat ve işlemi durdur.
+        if (midterm < 0 || midterm > 100 || finalExam < 0 || finalExam > 100) {
+            throw new IllegalArgumentException("Notlar 0 ile 100 arasında olmalıdır!");
+        }
+
         File inputFile = new File(FILE_NAME);
         File tempFile = new File("grades_temp.csv");
 
@@ -16,18 +22,17 @@ public class GradeManager {
              BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
 
             String targetKey = studentId + "," + courseCode; // Aradığımız satır başı
-
-            // Dosyayı satır satır oku
             String currentLine;
+            
+            // Dosyayı satır satır oku
             while ((currentLine = reader.readLine()) != null) {
-                // Eğer bu satır, bizim güncellemek istediğimiz dersin notuysa, onu yazma (atla)
+                // Eğer bu satır güncelleyeceğimiz not ise, onu atla (yazma)
                 if (currentLine.startsWith(targetKey)) continue; 
-                
                 writer.write(currentLine);
                 writer.newLine();
             }
             
-            // Şimdi güncel notu en sona ekle
+            // Yeni notu dosyanın en sonuna ekle
             String newEntry = studentId + "," + courseCode + "," + midterm + "," + finalExam;
             writer.write(newEntry);
             writer.newLine();
@@ -46,35 +51,50 @@ public class GradeManager {
             System.out.println("Dosya güncelleme hatası: " + e.getMessage());
         }
 
-        // Temp dosyayı asıl dosya yap
+        // Temp dosyayı asıl dosya yap (Eski dosyayı sil, yenisinin adını değiştir)
         if (inputFile.exists()) inputFile.delete();
         tempFile.renameTo(inputFile);
     }
 
     // Program açılınca notları yükler
     public void loadGrades(List<Student> students) {
-        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+        File file = new File(FILE_NAME);
+        if (!file.exists()) return; // Dosya yoksa işlem yapma
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
                 String[] data = line.split(",");
                 if (data.length < 4) continue;
 
-                String sId = data[0];
-                String cCode = data[1];
-                int mid = Integer.parseInt(data[2]);
-                int fin = Integer.parseInt(data[3]);
+                // trim() ile boşlukları temizliyoruz (Örn: " CS101 " -> "CS101")
+                String sId = data[0].trim();
+                String cCode = data[1].trim();
+                
+                try {
+                    int mid = Integer.parseInt(data[2].trim());
+                    int fin = Integer.parseInt(data[3].trim());
 
-                // İlgili öğrenciyi bul ve notunu ekle
-                for (Student s : students) {
-                    if (s.getStudentNumber().equals(sId)) {
-                        s.addGrade(cCode, mid, fin);
-                        break;
+                    // İlgili öğrenciyi bul
+                    for (Student s : students) {
+                        if (s.getStudentNumber().equals(sId)) {
+                            try {
+                                // Notu ekle
+                                s.addGrade(cCode, mid, fin);
+                            } catch (IllegalArgumentException e) {
+                                // Eğer öğrenci dersi almıyorsa buraya düşer, program çökmez ama uyarır.
+                                System.out.println("UYARI: " + s.getName() + " (" + cCode + ") dersini almadığı için not yüklenemedi.");
+                            }
+                            break;
+                        }
                     }
+                } catch (NumberFormatException e) {
+                    System.out.println("HATA: grades.csv içinde hatalı sayı formatı: " + line);
                 }
             }
         } catch (IOException e) {
-            // Dosya henüz yoksa sorun yok
+            System.out.println("Dosya okuma hatası: " + e.getMessage());
         }
     }
 }
