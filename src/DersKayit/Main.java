@@ -258,7 +258,7 @@ public class Main {
     public static void showStudentMenu(Scanner scanner, CourseCatalog cm, Student student, RegistrationManager rm) {
         boolean sessionActive = true;
         while (sessionActive) {
-            System.out.println("\n--- ÖĞRENCİ PANELİ: " + student.getName() + " (" + student.getDepartment() + ") ---");
+            System.out.println("\n--- ÖĞRENCİ PANELİ: " + student.getName() + " | " + student.getGradeLevel() + ". Sınıf (" + student.getDepartment() + ") ---");
             System.out.println("Toplam Kredi: " + student.calculateTotalCredits()); 
             System.out.printf("Güncel GPA: %.2f\n", student.calculateGPA()); 
             
