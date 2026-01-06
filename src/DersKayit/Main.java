@@ -163,16 +163,30 @@ public class Main {
                     String stdId = scanner.nextLine();
                     
                     try {
+                        // 1. VİZE GİRİŞİ VE ANLIK KONTROL
                         System.out.print("Vize Notu: ");
                         int vize = Integer.parseInt(scanner.nextLine());
+                        
+                        if (vize < 0 || vize > 100) {
+                            System.out.println(">> HATA: Vize notu 0-100 arasında olmalıdır! İşlem iptal edildi.");
+                            break; // Döngüyü kır, final sorma
+                        }
+
+                        // 2. FİNAL GİRİŞİ VE ANLIK KONTROL
                         System.out.print("Final Notu: ");
                         int fin = Integer.parseInt(scanner.nextLine());
-    
+
+                        if (fin < 0 || fin > 100) {
+                            System.out.println(">> HATA: Final notu 0-100 arasında olmalıdır! İşlem iptal edildi.");
+                            break; // Döngüyü kır, kaydetme
+                        }
+ 
+                        // Her şey yolundaysa kaydet
                         gm.saveOrUpdateGrade(stdId, code, vize, fin);
                         System.out.println(">> Not başarıyla kaydedildi.");
 
                     } catch (NumberFormatException e) {
-                        System.out.println("Hata: Notlar sayısal olmalıdır!");
+                        System.out.println("Hata: Lütfen sadece sayı giriniz!");
                     } catch (IllegalArgumentException e) {
                         System.out.println("Hata: " + e.getMessage());
                     }
