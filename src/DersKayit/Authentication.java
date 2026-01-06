@@ -62,8 +62,9 @@ public class Authentication {
 
     public void listAllUsers() {
         System.out.println("\n--- SİSTEMDEKİ TÜM KULLANICILAR ---");
-        System.out.printf("%-15s %-15s %-25s\n", "KULLANICI ADI", "ROL", "AD SOYAD");
-        System.out.println("---------------------------------------------------------");
+        // Tablo başlığına DEPARTMAN ekledik ve genişliği ayarladık
+        System.out.printf("%-15s %-15s %-25s %-20s\n", "KULLANICI ADI", "ROL", "AD SOYAD", "DEPARTMAN");
+        System.out.println("--------------------------------------------------------------------------------");
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
             String line;
@@ -71,11 +72,22 @@ public class Authentication {
                 if (line.trim().isEmpty()) continue;
                 String[] data = line.split(",");
                 if (data.length < 4) continue; 
-                System.out.printf("%-15s %-15s %-25s\n", data[0], data[2], data[3]);
+
+                String role = data[2].toLowerCase();
+                String dept = "-"; // Varsayılan olarak boş
+
+                // Rolüne göre departmanın csv içindeki yeri değişiyor
+                if (role.equals("student")) {
+                    if (data.length > 6) dept = data[6]; 
+                } else if (role.equals("instructor")) {
+                    if (data.length > 5) dept = data[5]; 
+                }
+
+                System.out.printf("%-15s %-15s %-25s %-20s\n", data[0], data[2], data[3], dept);
             }
         } catch (IOException e) {
             System.out.println("Liste okunamadı.");
         }
-        System.out.println("---------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------");
     }
 }
